@@ -10,10 +10,12 @@ public class Jugador extends Entidad {
     private Image imagen;
     private boolean salvoEsposa = false;
     private boolean izquierda = false, derecha = false, enSuelo = false;
+    private GamePanel gamePanel;
 
-    public Jugador(int x, int y, int ancho, int alto) {
-
+    public Jugador(int x, int y, int ancho, int alto, GamePanel gamePanel) {
         super(x, y, ancho, alto);
+        this.gamePanel = gamePanel;
+
         ImageIcon icono = new ImageIcon("jugador.png");
         imagen = icono.getImage().getScaledInstance(ancho, alto, Image.SCALE_SMOOTH);
     }
@@ -41,12 +43,19 @@ public class Jugador extends Entidad {
 
             if (e instanceof Enemigo && getRect().intersects(e.getRect())) {
                 vida--;
+
+                if (gamePanel.sonidoGolpe != null) {
+                    gamePanel.sonidoGolpe.play();
+                }
+
                 System.out.println("¡El jugador fue golpeado! Salud restante: " + vida);
                 x = 50;
                 y = 500;
                 dy = 0;
 
                 if (vida <= 0) {
+                    if (gamePanel.sonidoFondo != null) gamePanel.sonidoFondo.stop();
+                    if (gamePanel.sonidoDerrota != null) gamePanel.sonidoDerrota.play();
                     System.out.println("¡El jugador ha muerto!");
                 }
             }
@@ -56,38 +65,57 @@ public class Jugador extends Entidad {
                 System.out.println("¡Vida recogida! Vidas: " + vida);
                 it.remove();
             }
+
             if (e instanceof Esposa && getRect().intersects(e.getRect())) {
                 salvoEsposa = true;
-                System.out.println("¡Salvaste a tu esposa!");
+                System.out.println("¡Has salvado a tu esposa!");
+                it.remove();
             }
 
+            if (e instanceof EnemigoVolador && getRect().intersects(e.getRect())) {
+                vida--;
+
+                if (gamePanel.sonidoGolpe != null) {
+                    gamePanel.sonidoGolpe.play();
+                }
+
+                System.out.println("¡Golpeado por una sierra! Vida: " + vida);
+                x = 50;
+                y = 500;
+                dy = 0;
+
+                if (vida <= 0) {
+                    if (gamePanel.sonidoFondo != null) gamePanel.sonidoFondo.stop();
+                    if (gamePanel.sonidoDerrota != null) gamePanel.sonidoDerrota.play();
+                    System.out.println("¡El jugador ha muerto!");
+                }
+
+                it.remove();
+            }
         }
     }
 
     public void dibujar(Graphics g) {
         g.drawImage(imagen, x, y, null);
-        g.setColor(Color.BLACK);
-        g.drawString("Vidas: " + vida, 10, 10);
     }
 
     public void saltar() {
-        if (enSuelo) dy = -15;
+        if (enSuelo) {
+            dy = -15;
+            if (gamePanel.sonidoSalto != null) gamePanel.sonidoSalto.play();
+        }
     }
 
-    public void setIzquierda(boolean b) {
-        izquierda = b;
+    public void setIzquierda(boolean izq) {
+        izquierda = izq;
     }
 
-    public void setDerecha(boolean b) {
-        derecha = b;
+    public void setDerecha(boolean der) {
+        derecha = der;
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
+    public boolean haSalvadoEsposa() {
+        return salvoEsposa;
     }
 
     public int getVida() {
@@ -98,8 +126,7 @@ public class Jugador extends Entidad {
         return vida > 0;
     }
 
-    public boolean haSalvadoEsposa() {
-        return salvoEsposa;
-
+    public Rectangle getBounds() {
+        return new Rectangle(x, y, ancho, alto);
     }
 }
