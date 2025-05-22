@@ -1,22 +1,17 @@
 import java.awt.*;
-import java.util.List;
+import javax.swing.ImageIcon;
+import java.awt.Image;
 
 public class EnemigoVolador extends Enemigo {
-    public EnemigoVolador(int x, int y, int ancho, int alto, int vida) {
-        super(x, y, ancho, alto, vida);
+    private Image imagen;
+    public EnemigoVolador(int x, int y, int ancho, int alto) {
+
+        super(x, y, ancho, alto);
+        ImageIcon icono = new ImageIcon("sierra.png");
+        imagen = icono.getImage().getScaledInstance(ancho, alto, Image.SCALE_SMOOTH);
     }
 
     public void dibujar(Graphics g) {
-        g.setColor(Color.MAGENTA);
-        g.fillOval(x, y, ancho, alto);
+        g.drawImage(imagen, x, y, null);
     }
-
-    @Override
-    public void morir() {
-        System.out.println("El enemigo volador ha muerto");
-    }
-
-    // @Override
-    //public void actualizar(Jugador jugador, List<Entidad> entidades) {
-    // }
 }
